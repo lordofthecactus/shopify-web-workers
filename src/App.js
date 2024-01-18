@@ -1,24 +1,34 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.css";
+
+import { createWorkerFactory, useWorker } from "@shopify/react-web-worker";
+
+const createWorker = createWorkerFactory(() => import("./worker"));
+const worker = createWorker();
+const result = await worker.hello("Demo");
 
 function App() {
+  // this works too within the
+  const worker = useWorker(createWorker);
+  const runOnce = React.useRef(false);
+  const asyncResult = React.useRef(null);
+  const [result2, setResult2] = React.useState(null);
+
+  if (!runOnce.current) {
+    runOnce.current = true;
+    (async () => {
+      // does run 👇
+      await worker.hello("Demo 2");
+    })();
+  }
+
+  // I did not get it to work inside useEffect unfortunately
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <h1>Workers tests</h1>
+      <p>Worker 1 result: {result}</p>
+    </>
   );
 }
 
